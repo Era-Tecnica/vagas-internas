@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vagas Internas — Era Técnica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#0A331B;
+    --green-700:#018031;
+    --green-600:#02993C;
+    --green-500:#2FAF5E;
+    --green-100:#E4F3EA;
+    --white:#FFFFFF;
+    --off-white:#F6FAF7;
+    --ink:#122019;
+    --gray:#5C6E64;
+    --line:#D8E7DD;
+    --red:#C0392B;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--off-white);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;}
+  ::placeholder{color:#9AAAA1;}
+
+  header{
+    background:var(--white);
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+  }
+  .header-inner{
+    max-width:1180px;
+    margin:0 auto;
+    padding:16px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .logo-img{height:44px;width:auto;border-radius:6px;display:block;}
+  .portal-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    color:var(--gray);
+    text-transform:uppercase;
+    border-left:2px solid var(--line);
+    padding-left:14px;
+  }
+  .auth-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .btn{
+    border:none;border-radius:8px;
+    padding:10px 16px;
+    font-size:13.5px;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--green-700);color:var(--white);}
+  .btn-primary:hover{background:var(--green-900);}
+  .btn-outline{background:var(--white);color:var(--green-700);border:1px solid var(--green-700);}
+  .btn-outline:hover{background:var(--green-100);}
+  .btn-ghost{background:transparent;color:var(--gray);}
+  .btn-ghost:hover{color:var(--ink);}
+  .btn-danger{background:var(--white);color:var(--red);border:1px solid #EAC5C0;}
+  .btn-danger:hover{background:#FBEDEB;}
+  .btn-sm{padding:7px 12px;font-size:12.5px;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .user-chip{
+    display:flex;align-items:center;gap:8px;
+    background:var(--green-100);
+    padding:7px 12px 7px 8px;
+    border-radius:20px;
+    font-size:13px;
+  }
+  .user-chip .dot{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--green-700);color:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;font-family:'Space Grotesk',sans-serif;
+  }
+
+  .filter-wrap{max-width:1180px;margin:28px auto 0;padding:0 32px;}
+  .filter-bar{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 8px 22px -14px rgba(15,61,42,0.16);
+    padding:16px 18px;
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  }
+  .search-input{
+    flex:1 1 240px;display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+  }
+  .search-input input{border:none;outline:none;font-size:14px;width:100%;background:transparent;}
+  .search-input svg{flex-shrink:0;color:var(--gray);}
+  select, input[type=text], input[type=email], input[type=password], textarea{
+    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+    background:var(--white);
+  }
+  select{cursor:pointer;}
+  textarea{width:100%;resize:vertical;font-size:14px;}
+  .result-count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gray);margin-left:auto;white-space:nowrap;}
+
+  main{max-width:1180px;margin:0 auto;padding:28px 32px 100px;}
+  .job-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+  .job-card{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;cursor:pointer;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .job-card:hover{border-color:var(--green-500);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(15,61,42,0.35);}
+  .job-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .job-code{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.04em;
+    color:var(--green-700);background:var(--green-100);padding:4px 8px;border-radius:5px;white-space:nowrap;
+  }
+  .job-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;line-height:1.3;}
+  .job-meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--gray);}
+  .job-desc{font-size:13.5px;color:var(--gray);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .job-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px dashed var(--line);}
+  .job-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--green-700);}
+  .job-arrow{color:var(--green-500);font-size:14px;}
+  .empty-state{text-align:center;padding:80px 20px;color:var(--gray);}
+  .empty-state h3{font-family:'Space Grotesk',sans-serif;color:var(--ink);margin-bottom:8px;font-size:18px;}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(10,51,27,0.55);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 20px;overflow-y:auto;z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--white);border-radius:14px;max-width:640px;width:100%;
+    padding:36px;position:relative;animation:rise .18s ease;margin-bottom:40px;
+  }
+  .modal.wide{max-width:920px;}
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .modal-close{
+    position:absolute;top:20px;right:20px;width:32px;height:32px;border-radius:8px;
+    border:1px solid var(--line);background:var(--off-white);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray);font-size:16px;
+  }
+  .modal-close:hover{background:var(--green-100);color:var(--green-700);}
+  .modal h2{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:600;margin-bottom:6px;max-width:480px;}
+  .modal .subtitle{color:var(--gray);font-size:13.5px;margin-bottom:20px;}
+  .modal .job-meta{margin-bottom:20px;font-size:14px;}
+  .modal-section{margin-bottom:20px;}
+  .modal-section h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;
+    text-transform:uppercase;color:var(--green-700);margin-bottom:8px;
+  }
+  .modal-section p{font-size:14.5px;color:var(--ink);}
+  .modal-section ul{padding-left:18px;font-size:14.5px;color:var(--ink);}
+  .modal-section li{margin-bottom:5px;}
+  .apply-btn{
+    display:inline-flex;align-items:center;gap:8px;background:var(--green-700);color:var(--white);
+    border:none;border-radius:8px;padding:13px 22px;font-weight:600;font-size:14px;
+    cursor:pointer;margin-top:6px;transition:background .15s ease;
+  }
+  .apply-btn:hover{background:var(--green-900);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .field .hint{font-size:11.5px;color:var(--gray);font-weight:400;margin-left:6px;}
+  .field input, .field select, .field textarea{width:100%;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field{flex:1;}
+  .file-drop{
+    border:1.5px dashed var(--line);border-radius:8px;padding:16px;text-align:center;
+    font-size:13.5px;color:var(--gray);cursor:pointer;transition:border-color .15s;
+  }
+  .file-drop:hover{border-color:var(--green-500);}
+  .file-drop.has-file{border-color:var(--green-500);color:var(--green-700);background:var(--green-100);font-weight:600;}
+  .form-error{color:var(--red);font-size:12.5px;margin-top:6px;}
+  .form-note{background:var(--green-100);color:var(--green-900);font-size:13px;padding:12px 14px;border-radius:8px;margin-bottom:18px;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;}
+  .tab-btn{
+    background:none;border:none;padding:10px 4px;margin-right:20px;font-size:14px;font-weight:600;
+    color:var(--gray);border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{color:var(--green-700);border-color:var(--green-700);}
+
+  .admin-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .admin-toolbar h3{font-family:'Space Grotesk',sans-serif;font-size:18px;}
+  table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  th, td{text-align:left;padding:12px 14px;font-size:13.5px;border-bottom:1px solid var(--line);}
+  th{background:var(--off-white);font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--gray);font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+  .row-actions{display:flex;gap:6px;}
+  .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:700;background:var(--green-100);color:var(--green-700);}
+  .list-simple{list-style:none;}
+  .list-simple li{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--white);border:1px solid var(--line);border-radius:8px;
+    padding:10px 14px;margin-bottom:8px;font-size:13.5px;
+  }
+  .card-app{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+  .card-app-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .card-app-top strong{font-family:'Space Grotesk',sans-serif;font-size:15px;}
+  .card-app .meta-line{font-size:12.5px;color:var(--gray);margin-top:2px;}
+  .card-app .letter{font-size:13.5px;margin-top:10px;background:var(--off-white);padding:10px 12px;border-radius:8px;color:var(--ink);}
+  .admin-toolbar-inline{display:flex;gap:8px;margin-top:14px;}
+  .admin-toolbar-inline input{flex:1;}
+
+  .dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
+  .dash-header h1{font-family:'Space Grotesk',sans-serif;font-size:26px;}
+  .dash-header p{color:var(--gray);font-size:13.5px;margin-top:4px;}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--green-900);color:var(--white);padding:12px 20px;border-radius:8px;
+    font-size:13.5px;z-index:100;box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
+    display:none;
+  }
+  .toast.show{display:block;animation:rise .18s ease;}
+
+  .link-btn{background:none;border:none;color:var(--green-700);font-weight:600;font-size:13px;text-decoration:underline;cursor:pointer;padding:0;}
+
+  @media (max-width:640px){
+    .header-inner{padding:14px 20px;}
+    .portal-label{display:none;}
+    .filter-wrap, main{padding-left:20px;padding-right:20px;}
+    .result-count{margin-left:0;width:100%;order:5;}
+    .modal{padding:26px 20px;}
+  }
+  :focus-visible{outline:2px solid var(--green-500);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <img class="logo-img" alt="Era Técnica" id="logoImg">
+      <span class="portal-label">Portal de Carreiras Internas</span>
+    </div>
+    <div class="auth-controls" id="authControls"></div>
+  </div>
+</header>
+
+<div id="publicView">
+  <div class="filter-wrap">
+    <div class="filter-bar">
+      <div class="search-input">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="searchInput" type="text" placeholder="Buscar por cargo ou palavra-chave...">
+      </div>
+      <select id="deptFilter"></select>
+      <select id="locFilter"></select>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+  </div>
+  <main>
+    <div class="job-grid" id="jobGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <h3>Nenhuma vaga encontrada</h3>
+      <p>Tente ajustar a busca ou os filtros selecionados.</p>
+    </div>
+  </main>
+</div>
+
+<div id="dashboardView" style="display:none;"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.getElementById('logoImg').src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPwAAABPCAMAAAD4K1iOAAAAsVBMVEUBgDH////7//4Afy7/+v7//f/+/vsAfSoAeSCd0rEAeiQAhUL7/Pzv/vD7//j8//yEwJlprn4xi0ny+PQAgTcAdRLc7uI+ml2u1bvl++p6tYlWnmj2//YAdyYYhz0mj0yPxKEAeS7F4M5AomhgpnkYi02VwKFmtYRWrXhOpW3p9+3Z8N2t27x8spC95Mp1u5HL69Q1kFey0L0pmlk+mWSjza9UpHMAawBurIWdw6rD2MtuaPD5AAAYSElEQVR4nO1bCXebONe2BBKYTaTGCylOwI7jBWrTZpnO/P8f9t17JQFe0un7vuc77TkzcpeYRdKj5+5SRqN/27/t3/Zv+39uju/96in8suaEx33l/OpZ/JrmLJui2G7+keidZckmLjtmv3oiv6JVJ5W4Lmv+ieCDF+Fyzrb/RKX31gVzXbX+J2IH8DXj+d77J2IH9FlTb34jN++MHIf+NZ/uKlzvv1+95ej7H/bq6LeH/eIwXjXNzkeyL3he4AdeJxT6fee6U3tt+HPfSVB5gXc1L+fGgNi8zTIMl8vQfiq8WFX4E32WQRVcUeUsszDDvx9Ar+zbVddvNvJwGPjbjTSYjeNX+/V2fFqvwyqg6yG9HQaDXmG8Cv/gFL1Mt4ch8mU235Xldr85n7ID/dCQl9N1NnUc50kR21b6I+ch7b7nx3G5my8vGHgcwx14pr6/id1/g9vxWSvSh7BVBb2W07tJUw1mV9Yxo5Y3O4yA3nFaRd7us8GobyrO86J992gGOMf6rkOZhevG9MHa8nXwXtXQZIp4ewU+h4dd8xJzizGCL+13HjGmivzNOSPfu6u5EHBbvt3UC/+bYudNsvRhWQvp8sjlMBwOeLTgvWWpEuVCg1uCtWsY7CmR+CU59gNkXxfU1+wOwS8kzEAe7o1oOMv5EQbl4EelgN4XX7vZhNkEb8DFMryYaJXj1BiH29izIPApPs2kdAWXkcQB19XgneWzFCwSkWCzp5vML2DNXCngVQmNVjcNlzNaXghxECRnR18/HewPsOhcP5lINsvCkfM5YRxfTJqsswKPC7gmLXhaXwveG70JmDJ2ATCE4otP3aL56YTjsIDo68VEDXhXs8ESA56wI2WujIAB3j723HswC4GDRG5RLm+BH09oIRWnFmHfabasaUmhO5YAeGHAB9uC4VrBLHD2TE408wje5Ul+siOcg/+GkxMGvPd4TLhgQnCiUCrWg3fCFi5D/8D97nyeJPYSRwf8EmZgxJ4jdUmBEIBjxopxj9K7z1FQRAQLtHi8Iff+QoHoAfOwpNgzSLBmHtcXaZfIvxZ7bw1XECY8ilc5MO90zLso5f6HzHMNHrDDs8KNmKARYBV6sfd2B8ELmANM4ngh94Z5lpNJKOISppSdsAuhmm15RBvClStme0s9GB6JCs8APMwkGF01NHhxkSvB8dUkj4skTjfAvCzgFTOQNnhOmANknADcSejf2dqxzEuUkpURugvw+Ipm3snKQgilhDFduGo98/5YuShSYL5A7s+pqmICn7+EuoGpJZ2Ha4e0qgKwMjCg6LQLlnK+YkKCWRHwjHy+4e4c6ikrD6hNSbqhfkfLnGYX7/uRYPiaoTYC78U43W73YLAnPfMRapc6arU/B/+mmJ1VcDdjigN4lrTg6HanNu7BO9kB7YAL6EEKy/N5arGXh9DrQggUe3xhkoLAea8tQAUBezPSN1p+KXA9yCoIddzfCNioo6qcKAUdlQ/U9QjEHlBKNRgJhR7ILQqmmjk4Z/hsxsW8Y55FqDWTktCjtT9nXuu8k4EJiqRUPD+FQeBlnv9UH+cGfHVC+6PNLsI8o16LPc8HV5F5kSB4JPvrgpN2vQ1UD5yMmuQFurvD/Udhnl9OQD1cAK+fQLFHqEPRq1q0dDBUufSs1Gz3HfMC3Z1kk1N1k3lt7SsgHmwq+Mi5bxHPt9YWLVeowipuyUacmzzDPI8NH54Bz2QkOvAwAXFIjdijk4+A0m8nMGBAzPNHITCAJ/N+bxQDwcM6Fl8HI4XogIGWtg+jHIpwNfPoJ6IJE6t1cEvngbP7AIhPlASF52k/tmeV0Xs5oKkvmm1O5rM5m6IxeFbn0Z9rP5+AzqPYf56hp+CzLpb6E2hXqnh+XKE4feDqDXgU3Y55WCwwu4nReSzkBSlZOVm8XOiOZp4nqgCHGbkCjd4HzDswDwxv2OLxhgJW4wgdPLtbwiKgNxvKnWG+C/FyIBjBo885pEvf3yww6gKZMrpN5g5Gm905fzKlJCu+3HL1A/Any/wMoyzXTfRIahuO/COFXvJ41YVmXqxOBVmXySJzrnWewHvvIPVgGYsvN00vibuMX6syQaeSnIZyqpl3NXqXTXZeBz5Zpek4h3vo59/M/LwvBwX2ha0el+kBdF+wxfy23N9gHruNKLqFAbcBgBcSTVrjX7xrdJ6vKphKpNDzTG8wj2If3B/Iv+e3nK63n5DXbh+DXUQedejqrc6beJsVJ828DsjJ74KJVrI1guk8vKGHj4rnpTc/ohMUN139TeZpfdHwkuHbemDvBP4Una56MNZ+lSHFEHLI2b1/rfPE/B31y+rPN6R+uUjAcnN2BzJwwB8YGxaONfMo+OiH2MEyD0sB7oMTeKm66NZ7qinmgxk42TdyRUl5O7W9xTzF+hL7NeBpjeUVeGvtV5n3WutYevX49abO/wg8mDuFsWryCtNpIlag5x24tY2J8Exi0zFPcoBhKKRW+Xhu4WVpQTYerEuW3c/I5K1eb9ZmbjAvXTMMNgAPOk9iX16KvWbeBead0dMEDZpQiyvmZQcenO4t8FU6wTicLWD9s5eIgvY869EbneezdjaDv+1WM4+PgT0D+lmyWHYbTGjuIjfieepXlY/2Hrg/3P8Q/NDaY680DPxz8ozBi9iVweuZd2A2iYoiJQ7jb5cRnjAGD4I3UaRX8oc5DVDlsjuvCoJp7dLa9ybPRnj1fImtwtKJzufB+DU140XE6nUnlc73HDJ5WPHxbrvdnkAiIXVTb7eym1vMuwmXyWZZTavltMLAVLs69zC/XD6j8xjZeo9v6HCAheSWzpOrw3Dr7eFyFiD1oDIwQLndpdvdCoNJxsZ9/bSKcT1cG/dRrQ2Yl+TqnjDMkLK2Go/mDtyK6ESXjB9f3bI1FOGxYYR3QLE/i/AgyIFLAKn1z4Mc57PCaUUo9iBuLdPwwQqJKz8P0a2rQLYn37OOe48yRjB3kryLbVi4kMXGGnynyiltj8/C2xILGRDefj2ivRfcpBYQ8YDUsyF4EAMIP7/cBn+gRwZ+HnNqdRbejlHBwAA2fh/egj3OPheYNUkCD8O2CWIXWCLomBdAN7g6ymuAEdDFJ7OETrVPX2nRkghTkI4ntDkgB2YovwpbTLmTOqv8rnl35BwPp+VrLbCSBakFXA587z5G5zbgHWtJki02y/7tKtD/L085AkvSUH/P2gLzamLeM6NVaxaR52PtC3QBVzdN/jINqncqxxVHfC6o/KdYRVyPBeCnvv8whq4glbmHnwPI7XFdVF5uaPTsrj5+AtVKJ2ROu0ZJClOtAT8ej0nlJRsPW01iNlmVJUQ0mAjnDVxNy6bmxLVdSzLdoPbxcTwuy/FFaxWWGERrvyvpgso1IHThrrEXucYOw9ElELUYf1iQi2UT81STEz5B2njECzPINYUojjRQgtIIwUBS47sNSBz90CoMIyTvwSPzkhnwlDeRS+OD1UG5xvglQWME1HMcmYDyCMt6aqDzQpAoDKXBLozAcTHd0jc5VSiPGGQ4y4ZhxoCVIpwQuhvgqMB3GFVKOCmq2yuYG2n5hUA2gQy4SGDUyNU9U+SAc9FSKSLjTwVhYz14EnuX/THFNtIcQtwHz0dYAEMVoUon1fVwbIE1sQmMCTwqLJkODZ7sViAC8Y2skNH0qTuSjgR9ERW0FOR0sObTNHZNVFkQeBTPiCaKs+BUPqHYz0wLQ2yFKVBEq+0KXecAGtDxuriQaHk1VJDsgoN8cgofmTtgnvo0BnDULyx9CLWL4Z6ri65oKgGqoI+Lxk31Qt/LPqkCFhSY/uD8MAHAcIjCS4rmURB2xPsJVBhZ5K4pGyM+XHNdR0Ua9TpGtJCcStq0JhRVdVZHwKKQ6HFdtgUCcGApXKqN4fT5wNhzSqMs5pEeC82SAaxnglIv0cVjfQQnL9SEk6BC4AM5Zje4sPhN1VSXa2HpYaaggwwIwJ6phoQFvC34MWc51oudSKxvygSXnMMXEgSOdSMiAmuHiYxwXVWCRSota4oWm7weyoqMcKq4+siPKhQIPQRn8AM8XCjJh+ih+94EjLCwzPrF0KIx1BJabewNCQeHAkqJGhVFFN7AoEIl4lrhmVlU+4X4hT9N5Tl+wyjUkphMcrQ3/fJR+RZ8AuNGRkEKUMhBHbSka/JhPgL5FejiiFCqqeFjaBnoJ0n9w/uFGEyKRjXgmTWBpkk75rAJlHzUNrqJWYm2coIa7er8baMUCStGm1Frl4UUiwyM0TpFrgwL2Mzw5RrxJ93iNBzaPJI9RSUMvEa2Bov2Wj05hjy6f8llxHs4kev2SjvS4/RNr/45eNI4NCaR0Ph5Z9y5poCzv2n0gNu911EhuV45XuDaFHlOeDqTpAcDjcAfycySx4FsIBLa+aC9YxjdwgSpNqziGLd9UPOZxjYAI8G6yqIDD3cvnHOTAAPN4EJLOxdcuxW06kCPdq/kbXG1r6hvx1ftyFlzcQnClCIi8wtOr9mtw7Ba78tjgvXRlRkgNhVchDHRo0LGAXFtYyeAIqCId9Wm+00YztcnCAtI9Ek03G7gurCSRuC5qjP/rD1AMtO+TPsL0+nD6UhJJRpTAs9W5oHp/QEF4krnvwT+RZveHfKH80t/zHhhxCzfhVPcVsdN+uprKyBr1AOM0kJqWQEjWt/RRS+NlTo+6lj0W7dTkzSvnm/6WGang4xINqD/+pOZwyl2+4wamFfxeSXb+QSZ2uy8MOXAHCa4suTJQcaSt0Gsz1nv3zvwV4F+UBbs03nWNc1R/2At41MYDDOLN6xamUQyTK26RWL2TqFZVoIerCgPzMJvzER+x9dhRhvsa0XlXyRsbDIrJ8vlwMKNXJVcgocs8HBZlXO8uxjVk7ZpJFBgN4azN7SwV2J/E3xyCT7WZj6fn51Pch7GiTvpCuXzo/asuI+lN41wc8qAx2ISWT413pwdxwjuasr60MvGr/aq32Dx1Fq8kZvcYJ7NrkqS2aZEq4eOFYR81efv9zMT3/4d+NPkCvyMtpFmo/MaFjKvOvCj7L1mBnxtmH8GGgx4yOXR2Cfji7K1t59xG7i13bjevNBxjxF7dgv8xID3QKnM3eBzzVH2IqX45LmrOlEh2/0Z5k+HK/A5bmqo0cXOKTBvN4vo6+h7giRCCFtfiT3l8rA2zWXJHsALW5M99fownRW9xRuA96e6PRyYa8Bnr025y+wW6RvTMQYk1O/dUE72PEH/fNFKB7syTwX48x9pbMEHZqQ/ZrR/1KEMIKOtAod0vgdvaskQTPVif6bz4OTa945bsrSek+1nGFej0zy8DylAANfgx7luB9AJDd55HKsk6TYiv1j/rBaDEmBgaqfnLZ5BT62uTQWnGr8cpAEfpGYk3MBR7dROu9qiN9qFwQV43DBDPe0N3rMa6jzktV+6sykvp3HTlGD27w5Sads2rG45GV29Ao8xp0u7zgmr57aaBZy29EAWfgH/KzGimqWVEciR1robDcN6pYtbQXrAjR3mGvD+WGhlpKjP2jpvpy0Uq1+y9AK883qkW521L+RA51m3T5VlaU4P8jIEsafqjkwGxI9GVSO7qO4cPHlFFArD/AMaOToogT3fx4rRlrM5LBBuSJf89HCNnbLOgwU/waQGFtWCj0zo5XJpiXd2haDjGq7MT88X4Eej7weMqOubzHf7ZR6thKC9pvGpjqgGwFt9RMOcqAp2Ut4ETy3B1DnvmAdRqE1l9QtlkxCJaifvvT896P9vUE/RVWzB43ETd8C8fQouGozOVyyjRpjNQCICCdk5eDwbB1F63bm6Mz9vj6Mt0wNm/5jbCTzYpKskKc0y3GzpxJ4T5l2UMwC/26b0wUr6zOo8Fo30hoLz8IzxiESHQ1NYPh/N4r/dCO1BfWTcM88l5moavLfXI+1aeG9tDIo+DUEZG2h30YF3zGErEELFbuj84xGlXvd7V1P6D/YXU08R0TGy+FWv+Mk4PL/sCpoD8B4ei/D8bIzbCh3zrE71fWe+oCBTsb8yvTILE+pU99dyjyX3XuxxcxjCI2vtvYCOYEzTwjURlhNC3q0TLulSAm7AO/PU6AWEku7sinkSewO+KrEWEGEhAYu8gB+rbUc96HJV6FAHj4Jcg7cChkJpXJ3jhNnSBJ7+Ex0YE93hr/davZllWFEV+Yx/ORT7iR7vws+j+M+WRurpcBqjtF5iucGA954OJx1TeJ/rj3T+T91Htii4rkYIrOdEOvV/pyjCm0fW3S9nNq37AHxtI7wuZAzmLUXKdlQ6mKOXHOS+0Imd7CO9G+DlBXjcrZlZndNZbKQPSvIe/OeitprxfXK4qfNFSaiclxbTY6mXkOqtqKNa6iHE4scHowDyx+AnF+Gt4z82BRZQIJC0dC8YNydvcbOMXRT2EHzxE8xb8ImkyimZC0y8evDqqPdhwPdYg3eu84k+DwbM65oQLmHBhd6oSTea7hVkfa9GQtQ1eAeyQc/xMLaMLsBnm22rTIBtNuMxtsHkbqRncFHSJPDyI+ZxGBjL75l3viZYgMJDkBgBRAPwMYsWRvDn49s6r8V+tPwz0lGYzuJRlGTxZF6dwB2T3E2ba53frMNwHa43zUDndWBPW2VYM0UXedTWJStx/Y5GBcqD1vg+vfuBzjubfYhjZXjMMyOVdMKaKhpUQqUMvwN/EOxwsn7cRN1nzHN7MgQMKwI2JW8tAsbcBWPU89x4hZ26Al8m4EziGAs9nbXfm3vfC9y6wGJGYXbSncf5y8tmHpqFXekCzznzxW3mgzQuYKwkMUdTsIU7E3Kb830DsRedtFkLdMm8OR4Acq/0eUmui87Q4Ukfx3eQ1rXWAFrpS/ANbR+4pDcH4+dP1senVDCVdkySCmy2SEBHzIdp/Q+Y98fS1UVygDk2axkeY70fw0TRNEOdRxswO0vaLq29PQlYPYFy4u4IBKJ1m4Ojq20mj5rWbUz7Y3UTPDoamJKJ7R/LWp/E8T4toEOsKfyVnZtC3QLj6vmPwFvm/VLvErm4uxHbk41VowWViXGYnoFHQT4Oz/pdZHWqKM2N5b1NsiZP6xlEOzdPRZOr1+DdDrxxfxBn8kMX5DQ6xoBsnnZsPjh75Dz+BY5VJl1qi4HGRwbPH5vfh0joJHqHft9AVlI0u+kgq0ODhy9P3gZHNwC8O7D2Km7trKqXdFWwok4fpncT4coPTghOW9yrliPOO4O3XVM75eDDLPPsYM57e+85EtuVcBzHGf6Cj/+m2HAb6xZ4FhuDF5qRXuLCjQsrSmD+8Whi5TnX4EHt7/tTO6DzbFDMAIF8ezT1CohQdR/efjZhJqfuJ2sLMymRMQDv4IldJwseauvqKLyd2SNoX5CrP81SjELbMrM2NYVWgyBHXjEfd67O80L4u0S15G2PCiJKxxQwB+A5/TpA3R9cAZ23jobyeQik7/vfCtMYvT0oos5pRl432dBgydDa8pFk+VUBU8pJx7w7MYKPWY7NLLzXVibUilwzQqfSBget6DdEevCStoaLqzIW+bfx9OwqgZfnzKMl/auLNofMUxYbqfx7cN43lrEmenwwpoVKVAGf+GRGblBBR657XcOTstd5sLTr/tjpwqb2XSpjf9PCL2MWnRu8AfN63zG+Ag/mBSvL/vkMIM5yh0GOIJHiCysiGf6GT2/tOQaz9d358Wdk3mZ7uz7xavRT3hYsAxtJfgX+ILuUtkQua6OV/l2uT51TOc80m2zg0gyLuGfW/qC/3yhdu3RcoM2GvF2KfUTHMZg8WNtIAdaghidwJxMi/OEaAvjiZIL58cRUjlyemPNAePQfrX0dBp5OZ/Hjoc7zyQtdy05oTSbllHy6N9rM8bLnQ3ppDlIKkZi70+cJ7jINxB5SWv04pbQQw8Sfgn4caH/kE11LVPEu7M4jecFozDggxUcCjPDoDBUs7Ozd1/NIYyZWNJdg9E2bGniqPmWm1gyxc7U+tJ9omOAFTwjrD0Q9GQ0/HQsCz17Q+G67zyl25eS03u/Wu/0bbvmx2Ra+4cf+13Q7jZGU9XYHj+7WbxPatuytvVCnNdxZv6CC0dH53XY9/OxincjSr66N58upHwRVtd43hQum5gWnsD6RqaTiSMRXeqQ1Grn6tN9hg3Q6UQoCOiFkne7CwA/A4r+cWrZABDC+/k0vM61WQ4V+GR+x6/a3W64ftI/f++jO+WZw3I7T9HgoPnj4p1pRN2Va0tZqP+hHw98C/6ua3ZRC1/BfNnsw6mcODPw+4PF0Iugkj3Sk9N8KHx7luiotfNh+H/DYMOZ0/xfwkamE/dzTvwt4bPqMO3N/lribTbCrswIftt8FPAE3B7n+h8b/I/D/By3E/zhO3V3uAAAAAElFTkSuQmCC";
+
+/* ============ SUPABASE CLIENT ============ */
+const SUPABASE_URL = "https://jjjwavzolclophljqudd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqandhdnpvbGNsb3BobGpxdWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1Mjg0MTUsImV4cCI6MjA5OTEwNDQxNX0.3RSfGBepElHx3qgSNoX7IEA85YV5GqHVCbFNp3RMW94";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ APP STATE ============ */
+let db = { areas: [], vagas: [], candidaturas: [], profiles: [] };
+let state = {
+  currentUser: null,        // {id, email, nome, role}
+  adminTab: 'vagas',
+  pendingApplyVagaId: null,
+  editingVagaId: null
+};
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+/* ============ AUTH ============ */
+async function loadProfile(userId){
+  const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
+  if(error){ console.error(error); return null; }
+  return data;
+}
+
+async function refreshSession(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    const profile = await loadProfile(session.user.id);
+    if(profile){
+      state.currentUser = { id: profile.id, email: profile.email, nome: profile.nome, role: profile.role };
+    }
+  } else {
+    state.currentUser = null;
+  }
+}
+
+/* ============ INIT ============ */
+async function init(){
+  await refreshSession();
+  await loadAreas();
+  await loadVagas();
+  renderHeader();
+  populateFilters();
+  renderJobs();
+}
+
+async function loadAreas(){
+  const { data, error } = await sb.from('areas_internas').select('*').order('nome');
+  db.areas = error ? [] : data;
+}
+async function loadVagas(){
+  const { data, error } = await sb.from('vagas_internas').select('*').order('criado_em', { ascending:false });
+  db.vagas = error ? [] : data;
+}
+async function loadCandidaturas(){
+  const { data, error } = await sb.from('candidaturas_internas')
+    .select('*, vaga:vagas_internas(titulo,codigo,area), candidato:profiles(nome,email)')
+    .order('enviado_em', { ascending:false });
+  db.candidaturas = error ? [] : data;
+}
+async function loadMinhasCandidaturas(){
+  const { data, error } = await sb.from('candidaturas_internas')
+    .select('*, vaga:vagas_internas(titulo,area,local)')
+    .eq('candidato_id', state.currentUser.id)
+    .order('enviado_em', { ascending:false });
+  return error ? [] : data;
+}
+async function loadProfiles(){
+  const { data, error } = await sb.from('profiles').select('*').order('criado_em');
+  db.profiles = error ? [] : data;
+}
+
+/* ============ HEADER / AUTH UI ============ */
+function renderHeader(){
+  const el = document.getElementById('authControls');
+  if(!state.currentUser){
+    el.innerHTML = `<button class="btn btn-outline" onclick="openLoginModal()">Entrar</button>`;
+    return;
+  }
+  const u = state.currentUser;
+  const initials = u.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  if(u.role === 'admin' || u.role === 'viewer'){
+    const label = u.role === 'admin' ? 'Painel administrativo' : 'Painel (visualização)';
+    el.innerHTML = `
+      <button class="btn btn-outline" onclick="goToAdminDashboard()">${label}</button>
+      <div class="user-chip"><span class="dot">${initials}</span> ${escapeHtml(u.nome)}</div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    `;
+  } else {
+    el.innerHTML = `
+      <button class="btn btn-outline" onclick="goToCandidateDashboard()">Minhas candidaturas</button>
+      <div class="user-chip"><span class="dot">${initials}</span> ${escapeHtml(u.nome)}</div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    `;
+  }
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  state.currentUser = null;
+  goHome();
+}
+
+function goHome(){
+  document.getElementById('publicView').style.display = '';
+  document.getElementById('dashboardView').style.display = 'none';
+  document.getElementById('dashboardView').innerHTML = '';
+  renderHeader();
+  populateFilters();
+  renderJobs();
+}
+
+/* ============ FILTERS / LISTING ============ */
+function populateFilters(){
+  const deptFilter = document.getElementById('deptFilter');
+  const locFilter = document.getElementById('locFilter');
+  const curDept = deptFilter.value, curLoc = locFilter.value;
+  const locs = [...new Set(db.vagas.map(v=>v.local))].sort();
+  deptFilter.innerHTML = '<option value="">Todas as áreas</option>' + db.areas.map(a=>`<option value="${escapeHtml(a.nome)}">${escapeHtml(a.nome)}</option>`).join('');
+  locFilter.innerHTML = '<option value="">Todas as localidades</option>' + locs.map(l=>`<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('');
+  deptFilter.value = curDept; locFilter.value = curLoc;
+}
+
+function renderJobs(){
+  const jobGrid = document.getElementById('jobGrid');
+  const emptyState = document.getElementById('emptyState');
+  const resultCount = document.getElementById('resultCount');
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const dept = document.getElementById('deptFilter').value;
+  const loc = document.getElementById('locFilter').value;
+
+  const filtered = db.vagas.filter(v=>{
+    const matchesQuery = !q || v.titulo.toLowerCase().includes(q) || v.resumo.toLowerCase().includes(q);
+    const matchesDept = !dept || v.area === dept;
+    const matchesLoc = !loc || v.local === loc;
+    return matchesQuery && matchesDept && matchesLoc;
+  });
+
+  resultCount.textContent = filtered.length + (filtered.length === 1 ? ' vaga encontrada' : ' vagas encontradas');
+  jobGrid.innerHTML = '';
+
+  if(filtered.length === 0){ emptyState.style.display = 'block'; return; }
+  emptyState.style.display = 'none';
+
+  filtered.forEach(v=>{
+    const card = document.createElement('div');
+    card.className = 'job-card';
+    card.tabIndex = 0;
+    card.innerHTML = `
+      <div class="job-top"><span class="job-code">${escapeHtml(v.codigo)}</span></div>
+      <div class="job-title">${escapeHtml(v.titulo)}</div>
+      <div class="job-meta"><span>${escapeHtml(v.area)}</span><span>·</span><span>${escapeHtml(v.local)}</span></div>
+      <div class="job-desc">${escapeHtml(v.resumo)}</div>
+      <div class="job-foot">
+        <span class="job-tag">${escapeHtml(v.nivel)} · ${escapeHtml(v.tipo)}</span>
+        <span class="job-arrow">Ver detalhes →</span>
+      </div>`;
+    card.addEventListener('click', ()=>openJobModal(v.id));
+    card.addEventListener('keypress', e=>{ if(e.key==='Enter') openJobModal(v.id); });
+    jobGrid.appendChild(card);
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input', renderJobs);
+document.getElementById('deptFilter').addEventListener('change', renderJobs);
+document.getElementById('locFilter').addEventListener('change', renderJobs);
+
+/* ============ MODAL SYSTEM ============ */
+const modalOverlay = document.getElementById('modalOverlay');
+const modalContent = document.getElementById('modalContent');
+function openModal(html, wide){
+  modalContent.className = 'modal' + (wide ? ' wide' : '');
+  modalContent.innerHTML = html;
+  modalOverlay.classList.add('open');
+}
+function closeModal(){ modalOverlay.classList.remove('open'); modalContent.innerHTML=''; }
+modalOverlay.addEventListener('click', e=>{ if(e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeModal(); });
+
+/* ============ JOB DETAIL MODAL ============ */
+function openJobModal(vagaId){
+  const v = db.vagas.find(x=>x.id === vagaId);
+  if(!v) return;
+  openModal(`
+    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+    <span class="job-code">${escapeHtml(v.codigo)}</span>
+    <h2 style="margin-top:10px;">${escapeHtml(v.titulo)}</h2>
+    <div class="job-meta">
+      <span>${escapeHtml(v.area)}</span><span>·</span><span>${escapeHtml(v.local)}</span><span>·</span><span>${escapeHtml(v.nivel)} · ${escapeHtml(v.tipo)}</span>
+    </div>
+    <div class="modal-section"><h4>Sobre a vaga</h4><p>${escapeHtml(v.resumo)}</p></div>
+    <div class="modal-section"><h4>Responsabilidades</h4><ul>${v.responsabilidades.map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul></div>
+    <div class="modal-section"><h4>Requisitos</h4><ul>${v.requisitos.map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul></div>
+    <button class="apply-btn" onclick="handleApplyClick('${v.id}')">Candidatar-se →</button>
+  `);
+}
+
+function handleApplyClick(vagaId){
+  if(!state.currentUser || state.currentUser.role !== 'candidato'){
+    if(state.currentUser && state.currentUser.role !== 'candidato'){
+      showToast('Contas de administrador/visualização não se candidatam a vagas.');
+      return;
+    }
+    state.pendingApplyVagaId = vagaId;
+    openLoginModal('candidato', true);
+    return;
+  }
+  openApplicationModal(vagaId);
+}
+
+/* ============ LOGIN / CADASTRO ============ */
+function openLoginModal(defaultTab, applyContext){
+  defaultTab = defaultTab || 'candidato';
+  const noteHtml = applyContext ? `<div class="form-note">Faça login ou crie sua conta de colaborador para se candidatar a esta vaga.</div>` : '';
+  openModal(`
+    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+    <h2>Entrar</h2>
+    <p class="subtitle">Acesse com seu e-mail e senha.</p>
+    ${noteHtml}
+    <div class="field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seuemail@eratecnica.com.br"></div>
+    <div class="field"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••"></div>
+    <div class="form-error" id="loginError"></div>
+    <button class="apply-btn" id="loginBtn" onclick="doLogin()">Entrar</button>
+    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Ainda não tem conta? <button class="link-btn" onclick="openCadastroModal()">Criar conta de colaborador</button></p>
+  `);
+}
+
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const senha = document.getElementById('loginSenha').value;
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if(error){
+    if(error.message.includes('Email not confirmed')){
+      err.textContent = 'Este e-mail ainda não foi confirmado. Peça a um administrador para confirmar manualmente em Authentication → Users no Supabase.';
+    } else {
+      err.textContent = 'E-mail ou senha inválidos. Detalhe técnico: ' + error.message;
+    }
+    console.error('Erro no login:', error);
+    return;
+  }
+  const profile = await loadProfile(data.user.id);
+  state.currentUser = { id: profile.id, email: profile.email, nome: profile.nome, role: profile.role };
+  renderHeader();
+  closeModal();
+  showToast('Login realizado com sucesso.');
+  if(state.pendingApplyVagaId && state.currentUser.role === 'candidato'){
+    const vid = state.pendingApplyVagaId;
+    state.pendingApplyVagaId = null;
+    openApplicationModal(vid);
+  } else if(state.currentUser.role === 'admin' || state.currentUser.role === 'viewer'){
+    goToAdminDashboard();
+  }
+}
+
+function openCadastroModal(){
+  openModal(`
+    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+    <h2>Criar conta de colaborador</h2>
+    <p class="subtitle">Use seu e-mail corporativo para se candidatar às vagas internas.</p>
+    <div class="field"><label>Nome completo</label><input type="text" id="cadNome" placeholder="Seu nome"></div>
+    <div class="field"><label>E-mail</label><input type="email" id="cadEmail" placeholder="seuemail@eratecnica.com.br"></div>
+    <div class="field-row">
+      <div class="field"><label>Senha</label><input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar senha</label><input type="password" id="cadSenha2" placeholder="Repita a senha"></div>
+    </div>
+    <div class="form-error" id="cadError"></div>
+    <button class="apply-btn" id="cadBtn" onclick="doCadastro()">Criar conta</button>
+    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Já tem conta? <button class="link-btn" onclick="openLoginModal('candidato')">Entrar</button></p>
+  `);
+}
+
+async function doCadastro(){
+  const nome = document.getElementById('cadNome').value.trim();
+  const email = document.getElementById('cadEmail').value.trim().toLowerCase();
+  const senha = document.getElementById('cadSenha').value;
+  const senha2 = document.getElementById('cadSenha2').value;
+  const err = document.getElementById('cadError');
+  if(!nome || !email || !senha){ err.textContent = 'Preencha todos os campos.'; return; }
+  if(!email.includes('@')){ err.textContent = 'Informe um e-mail válido.'; return; }
+  if(senha.length < 6){ err.textContent = 'A senha deve ter pelo menos 6 caracteres.'; return; }
+  if(senha !== senha2){ err.textContent = 'As senhas não coincidem.'; return; }
+
+  const btn = document.getElementById('cadBtn');
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  const { data, error } = await sb.auth.signUp({
+    email, password: senha, options: { data: { nome } }
+  });
+  btn.disabled = false; btn.textContent = 'Criar conta';
+  if(error){
+    err.textContent = error.message.includes('already')
+      ? 'Já existe uma conta com este e-mail.'
+      : 'Não foi possível criar a conta agora. Detalhe técnico: ' + error.message;
+    console.error('Erro no cadastro:', error);
+    return;
+  }
+
+  if(!data.session){
+    closeModal();
+    showToast('Conta criada! Verifique seu e-mail para confirmar o cadastro e depois faça login.');
+    return;
+  }
+
+  const profile = await loadProfile(data.user.id);
+  state.currentUser = { id: profile.id, email: profile.email, nome: profile.nome, role: profile.role };
+  renderHeader();
+  closeModal();
+  showToast('Conta criada com sucesso.');
+  if(state.pendingApplyVagaId){
+    const vid = state.pendingApplyVagaId;
+    state.pendingApplyVagaId = null;
+    openApplicationModal(vid);
+  }
+}
+
+/* ============ APPLICATION FORM ============ */
+let pendingResumeFile = null;
+
+function openApplicationModal(vagaId){
+  const v = db.vagas.find(x=>x.id===vagaId);
+  if(!v) return;
+  pendingResumeFile = null;
+  openModal(`
+    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+    <h2>Candidatura</h2>
+    <p class="subtitle">${escapeHtml(v.titulo)} · ${escapeHtml(v.area)}</p>
+    <div class="field">
+      <label>Setor / área atual <span class="hint">obrigatório</span></label>
+      <input type="text" id="appSetor" placeholder="Ex: Suporte Técnico">
+    </div>
+    <div class="field">
+      <label>Nome do gestor atual <span class="hint">obrigatório</span></label>
+      <input type="text" id="appGestor" placeholder="Nome do seu gestor atual">
+    </div>
+    <div class="field">
+      <label>Carta sobre você <span class="hint">opcional</span></label>
+      <textarea id="appCarta" rows="4" placeholder="Conte um pouco sobre você e por que tem interesse nesta vaga..."></textarea>
+    </div>
+    <div class="field">
+      <label>Currículo <span class="hint">obrigatório · PDF, DOC ou DOCX, até 4 MB</span></label>
+      <div class="file-drop" id="fileDrop" onclick="document.getElementById('appCurriculo').click()">Clique para anexar seu currículo</div>
+      <input type="file" id="appCurriculo" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleResumeSelect(event)">
+    </div>
+    <div class="form-error" id="appError"></div>
+    <button class="apply-btn" id="submitAppBtn" onclick="submitApplication('${v.id}')">Enviar candidatura</button>
+  `);
+}
+
+function handleResumeSelect(evt){
+  const file = evt.target.files[0];
+  const drop = document.getElementById('fileDrop');
+  if(!file){ return; }
+  if(file.size > 4 * 1024 * 1024){
+    document.getElementById('appError').textContent = 'O arquivo excede o limite de 4 MB.';
+    pendingResumeFile = null;
+    drop.classList.remove('has-file');
+    drop.textContent = 'Clique para anexar seu currículo';
+    return;
+  }
+  pendingResumeFile = file;
+  drop.classList.add('has-file');
+  drop.textContent = '✓ ' + file.name;
+  document.getElementById('appError').textContent = '';
+}
+
+async function submitApplication(vagaId){
+  const setor = document.getElementById('appSetor').value.trim();
+  const gestor = document.getElementById('appGestor').value.trim();
+  const carta = document.getElementById('appCarta').value.trim();
+  const err = document.getElementById('appError');
+
+  if(!setor || !gestor){ err.textContent = 'Preencha o setor/área atual e o nome do gestor atual.'; return; }
+  if(!pendingResumeFile){ err.textContent = 'Anexe seu currículo para concluir a inscrição.'; return; }
+
+  const btn = document.getElementById('submitAppBtn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const filePath = `${state.currentUser.id}/${Date.now()}_${pendingResumeFile.name}`;
+  const { error: uploadError } = await sb.storage.from('curriculos').upload(filePath, pendingResumeFile);
+  if(uploadError){
+    btn.disabled = false; btn.textContent = 'Enviar candidatura';
+    err.textContent = 'Não foi possível enviar o currículo. Tente novamente.';
+    return;
+  }
+
+  const { error: insertError } = await sb.from('candidaturas_internas').insert({
+    vaga_id: vagaId,
+    candidato_id: state.currentUser.id,
+    setor_atual: setor,
+    gestor_atual: gestor,
+    carta: carta || null,
+    curriculo_path: filePath,
+    curriculo_nome: pendingResumeFile.name
+  });
+
+  btn.disabled = false; btn.textContent = 'Enviar candidatura';
+  if(insertError){ err.textContent = 'Não foi possível enviar agora. Tente novamente.'; return; }
+  closeModal();
+  showToast('Candidatura enviada com sucesso!');
+}
+
+/* ============ ADMIN / VIEWER DASHBOARD ============ */
+function goToAdminDashboard(){
+  if(!state.currentUser || (state.currentUser.role !== 'admin' && state.currentUser.role !== 'viewer')){ openLoginModal('candidato'); return; }
+  document.getElementById('publicView').style.display = 'none';
+  document.getElementById('dashboardView').style.display = '';
+  state.adminTab = 'vagas';
+  renderAdminDashboard();
+}
+
+function renderAdminDashboard(){
+  const isAdmin = state.currentUser.role === 'admin';
+  const el = document.getElementById('dashboardView');
+  el.innerHTML = `
+    <main>
+      <div class="dash-header">
+        <div>
+          <h1>${isAdmin ? 'Painel administrativo' : 'Painel (somente visualização)'}</h1>
+          <p>${isAdmin ? 'Gerencie vagas, áreas, administradores e candidaturas recebidas.' : 'Você tem acesso de leitura a vagas e candidaturas.'}</p>
+        </div>
+        <button class="btn btn-outline" onclick="goHome()">← Voltar ao portal</button>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn ${state.adminTab==='vagas'?'active':''}" onclick="setAdminTab('vagas')">Vagas</button>
+        ${isAdmin ? `<button class="tab-btn ${state.adminTab==='areas'?'active':''}" onclick="setAdminTab('areas')">Áreas</button>` : ''}
+        ${isAdmin ? `<button class="tab-btn ${state.adminTab==='admins'?'active':''}" onclick="setAdminTab('admins')">Administradores</button>` : ''}
+        <button class="tab-btn ${state.adminTab==='candidaturas'?'active':''}" onclick="setAdminTab('candidaturas')">Candidaturas</button>
+      </div>
+      <div id="adminTabBody"></div>
+    </main>
+  `;
+  renderAdminTabBody();
+}
+
+function setAdminTab(tab){ state.adminTab = tab; renderAdminDashboard(); }
+
+async function renderAdminTabBody(){
+  const body = document.getElementById('adminTabBody');
+  const isAdmin = state.currentUser.role === 'admin';
+  if(state.adminTab === 'vagas') return renderAdminVagas(body, isAdmin);
+  if(state.adminTab === 'areas' && isAdmin) return renderAdminAreas(body);
+  if(state.adminTab === 'admins' && isAdmin) return renderAdminAdmins(body);
+  if(state.adminTab === 'candidaturas') return renderAdminCandidaturas(body);
+}
+
+function renderAdminVagas(body, isAdmin){
+  body.innerHTML = `
+    <div class="admin-toolbar">
+      <h3>${db.vagas.length} vaga(s) publicada(s)</h3>
+      ${isAdmin ? `<button class="btn btn-primary" onclick="openVagaForm()">+ Nova vaga</button>` : ''}
+    </div>
+    <table>
+      <thead><tr><th>Código</th><th>Título</th><th>Área</th><th>Local</th><th>Nível</th>${isAdmin?'<th></th>':''}</tr></thead>
+      <tbody>
+        ${db.vagas.map(v=>`<tr>
+            <td><span class="job-code">${escapeHtml(v.codigo)}</span></td>
+            <td>${escapeHtml(v.titulo)}</td>
+            <td>${escapeHtml(v.area)}</td>
+            <td>${escapeHtml(v.local)}</td>
+            <td>${escapeHtml(v.nivel)}</td>
+            ${isAdmin ? `<td class="row-actions">
+              <button class="btn btn-outline btn-sm" onclick="openVagaForm('${v.id}')">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteVaga('${v.id}')">Excluir</button>
+            </td>` : ''}
+          </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:24px;">Nenhuma vaga cadastrada ainda.</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+function openVagaForm(vagaId){
+  const editing = !!vagaId;
+  const v = editing ? db.vagas.find(x=>x.id===vagaId) : null;
+  state.editingVagaId = vagaId || null;
+  openModal(`
+    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+    <h2>${editing ? 'Editar vaga' : 'Nova vaga'}</h2>
+    <div class="field"><label>Título da vaga</label><input type="text" id="vTitulo" value="${v?escapeHtml(v.titulo):''}" placeholder="Ex: Desenvolvedor(a) Frontend Pleno"></div>
+    <div class="field-row">
+      <div class="field">
+        <label>Área</label>
+        <select id="vArea" onchange="handleAreaSelectChange()">
+          ${db.areas.map(a=>`<option value="${escapeHtml(a.nome)}" ${v&&v.area===a.nome?'selected':''}>${escapeHtml(a.nome)}</option>`).join('')}
+          <option value="__nova__">+ Criar nova área...</option>
+        </select>
+        <input type="text" id="vNovaArea" placeholder="Nome da nova área" style="margin-top:8px;display:none;">
+      </div>
+      <div class="field">
+        <label>Código da vaga</label>
+        <input type="text" id="vCodigo" value="${v?escapeHtml(v.codigo):''}" placeholder="Gerado automaticamente se vazio">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Local</label>
+        <input type="text" id="vLocal" value="${v?escapeHtml(v.local):''}" placeholder="Ex: São Paulo — Híbrido / Remoto">
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <select id="vTipo">
+          ${['CLT','PJ','Estágio','Temporário'].map(t=>`<option ${v&&v.tipo===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Nível</label>
+        <select id="vNivel">
+          ${['Júnior','Pleno','Sênior'].map(n=>`<option ${v&&v.nivel===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Resumo da vaga</label><textarea id="vResumo" rows="3">${v?escapeHtml(v.resumo):''}</textarea></div>
+    <div class="field"><label>Responsabilidades <span class="hint">uma por linha</span></label><textarea id="vResp" rows="4">${v?v.responsabilidades.map(escapeHtml).join(String.fromCharCode(10)):''}</textarea></div>
+    <div class="field"><label>Requisitos <span class="hint">uma por linha</span></label><textarea id="vReq" rows="4">${v?v.requisitos.map(escapeHtml).join(String.fromCharCode(10)):''}</textarea></div>
+    <div class="form-error" id="vagaError"></div>
+    <button class="apply-btn" id="saveVagaBtn" onclick="saveVaga()">${editing ? 'Salvar alterações' : 'Publicar vaga'}</button>
+  `, true);
+}
+
+function handleAreaSelectChange(){
+  const sel = document.getElementById('vArea');
+  const novaArea = document.getElementById('vNovaArea');
+  novaArea.style.display = sel.value === '__nova__' ? 'block' : 'none';
+}
+
+async function saveVaga(){
+  const titulo = document.getElementById('vTitulo').value.trim();
+  let area = document.getElementById('vArea').value;
+  const novaAreaVal = document.getElementById('vNovaArea').value.trim();
+  const local = document.getElementById('vLocal').value.trim();
+  const tipo = document.getElementById('vTipo').value;
+  const nivel = document.getElementById('vNivel').value;
+  const resumo = document.getElementById('vResumo').value.trim();
+  const resp = document.getElementById('vResp').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const req = document.getElementById('vReq').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  let codigo = document.getElementById('vCodigo').value.trim();
+  const err = document.getElementById('vagaError');
+  const btn = document.getElementById('saveVagaBtn');
+
+  if(area === '__nova__'){
+    if(!novaAreaVal){ err.textContent = 'Informe o nome da nova área.'; return; }
+    area = novaAreaVal;
+  }
+  if(!titulo || !area || !local || !resumo){ err.textContent = 'Preencha todos os campos obrigatórios.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  if(!db.areas.some(a=>a.nome===area)){
+    const { error: areaErr } = await sb.from('areas_internas').insert({ nome: area });
+    if(!areaErr) await loadAreas();
+  }
+
+  if(!codigo){
+    const prefix = area.substring(0,4).toUpperCase().replace(/[^A-Z]/g,'') || 'VAGA';
+    const countSameArea = db.vagas.filter(x=>x.area===area).length + 1;
+    codigo = prefix + '-' + String(countSameArea).padStart(2,'0');
+  }
+
+  let opError;
+  if(state.editingVagaId){
+    const { error } = await sb.from('vagas_internas').update({
+      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo
+    }).eq('id', state.editingVagaId);
+    opError = error;
+  } else {
+    const { error } = await sb.from('vagas_internas').insert({
+      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo, criado_por: state.currentUser.id
+    });
+    opError = error;
+  }
+
+  btn.disabled = false; btn.textContent = state.editingVagaId ? 'Salvar alterações' : 'Publicar vaga';
+  if(opError){ err.textContent = 'Não foi possível salvar. Verifique suas permissões.'; return; }
+
+  await loadVagas();
+  closeModal();
+  showToast(state.editingVagaId ? 'Vaga atualizada.' : 'Vaga publicada.');
+  state.editingVagaId = null;
+  populateFilters();
+  renderAdminTabBody();
+}
+
+async function deleteVaga(vagaId){
+  if(!confirm('Tem certeza que deseja excluir esta vaga? As candidaturas relacionadas serão mantidas para consulta.')) return;
+  const { error } = await sb.from('vagas_internas').delete().eq('id', vagaId);
+  if(error){ showToast('Não foi possível excluir a vaga.'); return; }
+  await loadVagas();
+  showToast('Vaga excluída.');
+  populateFilters();
+  renderAdminTabBody();
+}
+
+function renderAdminAreas(body){
+  body.innerHTML = `
+    <div class="admin-toolbar"><h3>${db.areas.length} área(s) cadastrada(s)</h3></div>
+    <ul class="list-simple">
+      ${db.areas.map(a=>{
+        const count = db.vagas.filter(v=>v.area===a.nome).length;
+        return `<li><span>${escapeHtml(a.nome)}</span><span class="badge">${count} vaga(s)</span></li>`;
+      }).join('') || '<li>Nenhuma área cadastrada.</li>'}
+    </ul>
+    <div class="admin-toolbar-inline">
+      <input type="text" id="novaAreaStandalone" placeholder="Nome da nova área (ex: Marketing)">
+      <button class="btn btn-primary" onclick="addAreaStandalone()">+ Adicionar área</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--gray);margin-top:8px;">Crie uma área com antecedência para já deixá-la disponível ao publicar novas vagas.</p>
+  `;
+}
+
+async function addAreaStandalone(){
+  const input = document.getElementById('novaAreaStandalone');
+  const val = input.value.trim();
+  if(!val) return;
+  if(db.areas.some(a=>a.nome===val)){ showToast('Essa área já existe.'); return; }
+  const { error } = await sb.from('areas_internas').insert({ nome: val });
+  if(error){ showToast('Não foi possível criar a área.'); return; }
+  await loadAreas();
+  showToast('Área criada.');
+  populateFilters();
+  renderAdminTabBody();
+}
+
+async function renderAdminAdmins(body){
+  await loadProfiles();
+  const staff = db.profiles.filter(p=>p.role==='admin' || p.role==='viewer');
+  body.innerHTML = `
+    <div class="admin-toolbar"><h3>${staff.length} administrador(es)/visualizador(es)</h3></div>
+    <table>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th></th></tr></thead>
+      <tbody>
+        ${staff.map(a=>`<tr>
+          <td>${escapeHtml(a.nome)}</td>
+          <td>${escapeHtml(a.email)}</td>
+          <td><span class="badge">${a.role === 'admin' ? 'Administrador' : 'Visualização'}</span></td>
+          <td class="row-actions">
+            ${a.id !== state.currentUser.id ? `<button class="btn btn-danger btn-sm" onclick="demoteToCandidato('${a.id}')">Remover acesso</button>` : '<span style="font-size:12px;color:var(--gray);">(você)</span>'}
+          </td>
+        </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Nenhum administrador cadastrado.</td></tr>'}
+      </tbody>
+    </table>
+    <div class="admin-toolbar" style="margin-top:22px;"><h3>Promover colaborador</h3></div>
+    <p style="font-size:12.5px;color:var(--gray);margin-bottom:12px;">A pessoa precisa já ter uma conta criada no portal (como colaborador) antes de ser promovida.</p>
+    <div class="field-row">
+      <div class="field"><label>E-mail do colaborador</label><input type="email" id="promoteEmail" placeholder="email@eratecnica.com.br"></div>
+      <div class="field">
+        <label>Novo papel</label>
+        <select id="promoteRole">
+          <option value="admin">Administrador (acesso completo)</option>
+          <option value="viewer">Visualização (somente leitura)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-error" id="promoteError"></div>
+    <button class="btn btn-primary" onclick="promoteUser()">Atualizar papel</button>
+  `;
+}
+
+async function promoteUser(){
+  const email = document.getElementById('promoteEmail').value.trim().toLowerCase();
+  const role = document.getElementById('promoteRole').value;
+  const err = document.getElementById('promoteError');
+  if(!email){ err.textContent = 'Informe o e-mail do colaborador.'; return; }
+  const { data: found, error: findErr } = await sb.from('profiles').select('*').eq('email', email).maybeSingle();
+  if(findErr || !found){ err.textContent = 'Nenhuma conta encontrada com esse e-mail. A pessoa precisa se cadastrar primeiro no portal.'; return; }
+  const { error: updErr } = await sb.from('profiles').update({ role }).eq('id', found.id);
+  if(updErr){ err.textContent = 'Não foi possível atualizar o papel.'; return; }
+  showToast(`${found.nome} agora tem acesso de ${role === 'admin' ? 'administrador' : 'visualização'}.`);
+  renderAdminTabBody();
+}
+
+async function demoteToCandidato(userId){
+  if(!confirm('Remover o acesso administrativo desta pessoa?')) return;
+  const { error } = await sb.from('profiles').update({ role: 'candidato' }).eq('id', userId);
+  if(error){ showToast('Não foi possível remover o acesso.'); return; }
+  showToast('Acesso removido.');
+  renderAdminTabBody();
+}
+
+async function renderAdminCandidaturas(body){
+  body.innerHTML = `<p style="color:var(--gray);font-size:13.5px;">Carregando candidaturas...</p>`;
+  await loadCandidaturas();
+  if(db.candidaturas.length === 0){
+    body.innerHTML = `<div class="empty-state"><h3>Nenhuma candidatura recebida ainda</h3><p>As inscrições enviadas pelos colaboradores aparecerão aqui.</p></div>`;
+    return;
+  }
+  body.innerHTML = db.candidaturas.map(c=>{
+    const data = new Date(c.enviado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `
+      <div class="card-app">
+        <div class="card-app-top">
+          <div>
+            <strong>${escapeHtml(c.candidato ? c.candidato.nome : 'Candidato removido')}</strong>
+            <div class="meta-line">${escapeHtml(c.candidato ? c.candidato.email : '')}</div>
+          </div>
+          <span class="job-code">${c.vaga ? escapeHtml(c.vaga.codigo) : 'Vaga removida'}</span>
+        </div>
+        <div class="meta-line" style="margin-top:8px;">Vaga: <strong>${c.vaga ? escapeHtml(c.vaga.titulo) : '(vaga removida)'}</strong> · Enviada em ${data}</div>
+        <div class="meta-line">Setor atual: ${escapeHtml(c.setor_atual)} · Gestor atual: ${escapeHtml(c.gestor_atual)}</div>
+        ${c.carta ? `<div class="letter">${escapeHtml(c.carta)}</div>` : ''}
+        <div style="margin-top:12px;">
+          <button class="btn btn-outline btn-sm" onclick="downloadCurriculo('${c.curriculo_path}', '${escapeHtml(c.curriculo_nome)}')">⬇ Baixar currículo (${escapeHtml(c.curriculo_nome)})</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function downloadCurriculo(path, nome){
+  const { data, error } = await sb.storage.from('curriculos').createSignedUrl(path, 60);
+  if(error || !data){ showToast('Não foi possível gerar o link do currículo.'); return; }
+  window.open(data.signedUrl, '_blank');
+}
+
+/* ============ CANDIDATE DASHBOARD ============ */
+function goToCandidateDashboard(){
+  if(!state.currentUser || state.currentUser.role !== 'candidato'){ openLoginModal('candidato'); return; }
+  document.getElementById('publicView').style.display = 'none';
+  document.getElementById('dashboardView').style.display = '';
+  renderCandidateDashboard();
+}
+
+async function renderCandidateDashboard(){
+  const el = document.getElementById('dashboardView');
+  el.innerHTML = `<main><p style="color:var(--gray);font-size:13.5px;">Carregando...</p></main>`;
+  const minhas = await loadMinhasCandidaturas();
+  el.innerHTML = `
+    <main>
+      <div class="dash-header">
+        <div>
+          <h1>Minhas candidaturas</h1>
+          <p>Acompanhe as vagas para as quais você já se candidatou.</p>
+        </div>
+        <button class="btn btn-outline" onclick="goHome()">← Voltar ao portal</button>
+      </div>
+      ${minhas.length === 0 ? `
+        <div class="empty-state"><h3>Você ainda não se candidatou a nenhuma vaga</h3><p>Explore as vagas abertas e candidate-se quando encontrar uma boa oportunidade.</p></div>
+      ` : minhas.map(c=>{
+        const data = new Date(c.enviado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+        return `
+          <div class="card-app">
+            <div class="card-app-top">
+              <div>
+                <strong>${c.vaga ? escapeHtml(c.vaga.titulo) : 'Vaga removida'}</strong>
+                <div class="meta-line">${c.vaga ? escapeHtml(c.vaga.area)+' · '+escapeHtml(c.vaga.local) : ''}</div>
+              </div>
+              <span class="badge">Enviada</span>
+            </div>
+            <div class="meta-line" style="margin-top:8px;">Candidatura enviada em ${data}</div>
+          </div>
+        `;
+      }).join('')}
+    </main>
+  `;
+}
+
+/* ============ START ============ */
+init();
+</script>
+
+</body>
+</html>
