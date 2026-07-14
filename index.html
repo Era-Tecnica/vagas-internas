@@ -293,12 +293,12 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ============ APP STATE ============ */
-let db = { areas: [], vagas: [], candidaturas: [], profiles: [] };
+let db = { areas: [], vagas: [], contatos: [], profiles: [] };
 let state = {
   currentUser: null,        // {id, email, nome, role}
   adminTab: 'vagas',
-  pendingApplyVagaId: null,
-  editingVagaId: null
+  editingVagaId: null,
+  lastContatoId: null
 };
 
 function showToast(msg){
@@ -348,21 +348,14 @@ async function loadAreas(){
   db.areas = error ? [] : data;
 }
 async function loadVagas(){
-  const { data, error } = await sb.from('vagas_internas').select('*').order('criado_em', { ascending:false });
+  const { data, error } = await sb.from('vagas_internas')
+    .select('*, contato:contatos_internas(id,nome,email,telefone)')
+    .order('criado_em', { ascending:false });
   db.vagas = error ? [] : data;
 }
-async function loadCandidaturas(){
-  const { data, error } = await sb.from('candidaturas_internas')
-    .select('*, vaga:vagas_internas(titulo,codigo,area), candidato:profiles(nome,email)')
-    .order('enviado_em', { ascending:false });
-  db.candidaturas = error ? [] : data;
-}
-async function loadMinhasCandidaturas(){
-  const { data, error } = await sb.from('candidaturas_internas')
-    .select('*, vaga:vagas_internas(titulo,area,local)')
-    .eq('candidato_id', state.currentUser.id)
-    .order('enviado_em', { ascending:false });
-  return error ? [] : data;
+async function loadContatos(){
+  const { data, error } = await sb.from('contatos_internas').select('*').order('nome');
+  db.contatos = error ? [] : data;
 }
 async function loadProfiles(){
   const { data, error } = await sb.from('profiles').select('*').order('criado_em');
@@ -373,7 +366,7 @@ async function loadProfiles(){
 function renderHeader(){
   const el = document.getElementById('authControls');
   if(!state.currentUser){
-    el.innerHTML = `<button class="btn btn-outline" onclick="openLoginModal()">Entrar</button>`;
+    el.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="openLoginModal()">Área administrativa</button>`;
     return;
   }
   const u = state.currentUser;
@@ -387,7 +380,6 @@ function renderHeader(){
     `;
   } else {
     el.innerHTML = `
-      <button class="btn btn-outline" onclick="goToCandidateDashboard()">Minhas candidaturas</button>
       <div class="user-chip"><span class="dot">${initials}</span> ${escapeHtml(u.nome)}</div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
     `;
@@ -480,6 +472,21 @@ document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeModal(); }
 function openJobModal(vagaId){
   const v = db.vagas.find(x=>x.id === vagaId);
   if(!v) return;
+  const c = v.contato;
+  const contatoHtml = c ? `
+    <div class="modal-section">
+      <h4>Fale com o responsável por esta vaga</h4>
+      <div class="card-app" style="margin-bottom:0;">
+        <strong style="font-family:'Space Grotesk',sans-serif;font-size:15px;">${escapeHtml(c.nome)}</strong>
+        <div class="meta-line" style="margin-top:6px;">
+          ${c.email ? `<div>✉️ <a href="mailto:${escapeHtml(c.email)}" style="color:var(--green-700);font-weight:600;">${escapeHtml(c.email)}</a></div>` : ''}
+          ${c.telefone ? `<div style="margin-top:4px;">📞 ${escapeHtml(c.telefone)}</div>` : ''}
+        </div>
+      </div>
+    </div>
+  ` : `
+    <div class="form-note">Nenhum contato foi definido para esta vaga ainda. Fale com o time de RH.</div>
+  `;
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
     <span class="job-code">${escapeHtml(v.codigo)}</span>
@@ -490,37 +497,21 @@ function openJobModal(vagaId){
     <div class="modal-section"><h4>Sobre a vaga</h4><p>${escapeHtml(v.resumo)}</p></div>
     <div class="modal-section"><h4>Responsabilidades</h4><ul>${v.responsabilidades.map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul></div>
     <div class="modal-section"><h4>Requisitos</h4><ul>${v.requisitos.map(r=>`<li>${escapeHtml(r)}</li>`).join('')}</ul></div>
-    <button class="apply-btn" onclick="handleApplyClick('${v.id}')">Candidatar-se →</button>
+    ${contatoHtml}
   `);
 }
 
-function handleApplyClick(vagaId){
-  if(!state.currentUser || state.currentUser.role !== 'candidato'){
-    if(state.currentUser && state.currentUser.role !== 'candidato'){
-      showToast('Contas de administrador/visualização não se candidatam a vagas.');
-      return;
-    }
-    state.pendingApplyVagaId = vagaId;
-    openLoginModal('candidato', true);
-    return;
-  }
-  openApplicationModal(vagaId);
-}
-
 /* ============ LOGIN / CADASTRO ============ */
-function openLoginModal(defaultTab, applyContext){
-  defaultTab = defaultTab || 'candidato';
-  const noteHtml = applyContext ? `<div class="form-note">Faça login ou crie sua conta de colaborador para se candidatar a esta vaga.</div>` : '';
+function openLoginModal(){
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
-    <h2>Entrar</h2>
-    <p class="subtitle">Acesse com seu e-mail e senha.</p>
-    ${noteHtml}
+    <h2>Área administrativa</h2>
+    <p class="subtitle">Login restrito à equipe que gerencia as vagas.</p>
     <div class="field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seuemail@eratecnica.com.br"></div>
     <div class="field"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••"></div>
     <div class="form-error" id="loginError"></div>
     <button class="apply-btn" id="loginBtn" onclick="doLogin()">Entrar</button>
-    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Ainda não tem conta? <button class="link-btn" onclick="openCadastroModal()">Criar conta de colaborador</button></p>
+    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Primeiro acesso da equipe? <button class="link-btn" onclick="openCadastroModal()">Criar conta administrativa</button></p>
   `);
 }
 
@@ -546,11 +537,7 @@ async function doLogin(){
   renderHeader();
   closeModal();
   showToast('Login realizado com sucesso.');
-  if(state.pendingApplyVagaId && state.currentUser.role === 'candidato'){
-    const vid = state.pendingApplyVagaId;
-    state.pendingApplyVagaId = null;
-    openApplicationModal(vid);
-  } else if(state.currentUser.role === 'admin' || state.currentUser.role === 'viewer'){
+  if(state.currentUser.role === 'admin' || state.currentUser.role === 'viewer'){
     goToAdminDashboard();
   }
 }
@@ -558,8 +545,8 @@ async function doLogin(){
 function openCadastroModal(){
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
-    <h2>Criar conta de colaborador</h2>
-    <p class="subtitle">Use seu e-mail corporativo para se candidatar às vagas internas.</p>
+    <h2>Criar conta administrativa</h2>
+    <p class="subtitle">Use este cadastro apenas se você faz parte da equipe que gerencia as vagas. Depois de criar a conta, peça a outro administrador para liberar seu acesso em "Administradores".</p>
     <div class="field"><label>Nome completo</label><input type="text" id="cadNome" placeholder="Seu nome"></div>
     <div class="field"><label>E-mail</label><input type="email" id="cadEmail" placeholder="seuemail@eratecnica.com.br"></div>
     <div class="field-row">
@@ -568,7 +555,7 @@ function openCadastroModal(){
     </div>
     <div class="form-error" id="cadError"></div>
     <button class="apply-btn" id="cadBtn" onclick="doCadastro()">Criar conta</button>
-    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Já tem conta? <button class="link-btn" onclick="openLoginModal('candidato')">Entrar</button></p>
+    <p style="margin-top:14px;font-size:13px;color:var(--gray);">Já tem conta? <button class="link-btn" onclick="openLoginModal()">Entrar</button></p>
   `);
 }
 
@@ -607,98 +594,7 @@ async function doCadastro(){
   state.currentUser = { id: profile.id, email: profile.email, nome: profile.nome, role: profile.role };
   renderHeader();
   closeModal();
-  showToast('Conta criada com sucesso.');
-  if(state.pendingApplyVagaId){
-    const vid = state.pendingApplyVagaId;
-    state.pendingApplyVagaId = null;
-    openApplicationModal(vid);
-  }
-}
-
-/* ============ APPLICATION FORM ============ */
-let pendingResumeFile = null;
-
-function openApplicationModal(vagaId){
-  const v = db.vagas.find(x=>x.id===vagaId);
-  if(!v) return;
-  pendingResumeFile = null;
-  openModal(`
-    <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
-    <h2>Candidatura</h2>
-    <p class="subtitle">${escapeHtml(v.titulo)} · ${escapeHtml(v.area)}</p>
-    <div class="field">
-      <label>Setor / área atual <span class="hint">obrigatório</span></label>
-      <input type="text" id="appSetor" placeholder="Ex: Suporte Técnico">
-    </div>
-    <div class="field">
-      <label>Nome do gestor atual <span class="hint">obrigatório</span></label>
-      <input type="text" id="appGestor" placeholder="Nome do seu gestor atual">
-    </div>
-    <div class="field">
-      <label>Carta sobre você <span class="hint">opcional</span></label>
-      <textarea id="appCarta" rows="4" placeholder="Conte um pouco sobre você e por que tem interesse nesta vaga..."></textarea>
-    </div>
-    <div class="field">
-      <label>Currículo <span class="hint">obrigatório · PDF, DOC ou DOCX, até 4 MB</span></label>
-      <div class="file-drop" id="fileDrop" onclick="document.getElementById('appCurriculo').click()">Clique para anexar seu currículo</div>
-      <input type="file" id="appCurriculo" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleResumeSelect(event)">
-    </div>
-    <div class="form-error" id="appError"></div>
-    <button class="apply-btn" id="submitAppBtn" onclick="submitApplication('${v.id}')">Enviar candidatura</button>
-  `);
-}
-
-function handleResumeSelect(evt){
-  const file = evt.target.files[0];
-  const drop = document.getElementById('fileDrop');
-  if(!file){ return; }
-  if(file.size > 4 * 1024 * 1024){
-    document.getElementById('appError').textContent = 'O arquivo excede o limite de 4 MB.';
-    pendingResumeFile = null;
-    drop.classList.remove('has-file');
-    drop.textContent = 'Clique para anexar seu currículo';
-    return;
-  }
-  pendingResumeFile = file;
-  drop.classList.add('has-file');
-  drop.textContent = '✓ ' + file.name;
-  document.getElementById('appError').textContent = '';
-}
-
-async function submitApplication(vagaId){
-  const setor = document.getElementById('appSetor').value.trim();
-  const gestor = document.getElementById('appGestor').value.trim();
-  const carta = document.getElementById('appCarta').value.trim();
-  const err = document.getElementById('appError');
-
-  if(!setor || !gestor){ err.textContent = 'Preencha o setor/área atual e o nome do gestor atual.'; return; }
-  if(!pendingResumeFile){ err.textContent = 'Anexe seu currículo para concluir a inscrição.'; return; }
-
-  const btn = document.getElementById('submitAppBtn');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-
-  const filePath = `${state.currentUser.id}/${Date.now()}_${pendingResumeFile.name}`;
-  const { error: uploadError } = await sb.storage.from('curriculos').upload(filePath, pendingResumeFile);
-  if(uploadError){
-    btn.disabled = false; btn.textContent = 'Enviar candidatura';
-    err.textContent = 'Não foi possível enviar o currículo. Tente novamente.';
-    return;
-  }
-
-  const { error: insertError } = await sb.from('candidaturas_internas').insert({
-    vaga_id: vagaId,
-    candidato_id: state.currentUser.id,
-    setor_atual: setor,
-    gestor_atual: gestor,
-    carta: carta || null,
-    curriculo_path: filePath,
-    curriculo_nome: pendingResumeFile.name
-  });
-
-  btn.disabled = false; btn.textContent = 'Enviar candidatura';
-  if(insertError){ err.textContent = 'Não foi possível enviar agora. Tente novamente.'; return; }
-  closeModal();
-  showToast('Candidatura enviada com sucesso!');
+  showToast('Conta criada. Peça a um administrador para liberar seu acesso em "Administradores".');
 }
 
 /* ============ ADMIN / VIEWER DASHBOARD ============ */
@@ -718,15 +614,15 @@ function renderAdminDashboard(){
       <div class="dash-header">
         <div>
           <h1>${isAdmin ? 'Painel administrativo' : 'Painel (somente visualização)'}</h1>
-          <p>${isAdmin ? 'Gerencie vagas, áreas, administradores e candidaturas recebidas.' : 'Você tem acesso de leitura a vagas e candidaturas.'}</p>
+          <p>${isAdmin ? 'Gerencie vagas, áreas, contatos e administradores.' : 'Você tem acesso de leitura a vagas.'}</p>
         </div>
         <button class="btn btn-outline" onclick="goHome()">← Voltar ao portal</button>
       </div>
       <div class="tabs">
         <button class="tab-btn ${state.adminTab==='vagas'?'active':''}" onclick="setAdminTab('vagas')">Vagas</button>
         ${isAdmin ? `<button class="tab-btn ${state.adminTab==='areas'?'active':''}" onclick="setAdminTab('areas')">Áreas</button>` : ''}
+        ${isAdmin ? `<button class="tab-btn ${state.adminTab==='contatos'?'active':''}" onclick="setAdminTab('contatos')">Contatos</button>` : ''}
         ${isAdmin ? `<button class="tab-btn ${state.adminTab==='admins'?'active':''}" onclick="setAdminTab('admins')">Administradores</button>` : ''}
-        <button class="tab-btn ${state.adminTab==='candidaturas'?'active':''}" onclick="setAdminTab('candidaturas')">Candidaturas</button>
       </div>
       <div id="adminTabBody"></div>
     </main>
@@ -741,8 +637,8 @@ async function renderAdminTabBody(){
   const isAdmin = state.currentUser.role === 'admin';
   if(state.adminTab === 'vagas') return renderAdminVagas(body, isAdmin);
   if(state.adminTab === 'areas' && isAdmin) return renderAdminAreas(body);
+  if(state.adminTab === 'contatos' && isAdmin) return renderAdminContatos(body);
   if(state.adminTab === 'admins' && isAdmin) return renderAdminAdmins(body);
-  if(state.adminTab === 'candidaturas') return renderAdminCandidaturas(body);
 }
 
 function renderAdminVagas(body, isAdmin){
@@ -752,7 +648,7 @@ function renderAdminVagas(body, isAdmin){
       ${isAdmin ? `<button class="btn btn-primary" onclick="openVagaForm()">+ Nova vaga</button>` : ''}
     </div>
     <table>
-      <thead><tr><th>Código</th><th>Título</th><th>Área</th><th>Local</th><th>Nível</th>${isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th>Código</th><th>Título</th><th>Área</th><th>Local</th><th>Nível</th><th>Contato</th>${isAdmin?'<th></th>':''}</tr></thead>
       <tbody>
         ${db.vagas.map(v=>`<tr>
             <td><span class="job-code">${escapeHtml(v.codigo)}</span></td>
@@ -760,20 +656,22 @@ function renderAdminVagas(body, isAdmin){
             <td>${escapeHtml(v.area)}</td>
             <td>${escapeHtml(v.local)}</td>
             <td>${escapeHtml(v.nivel)}</td>
+            <td>${v.contato ? escapeHtml(v.contato.nome) : '<span style="color:var(--gray);">—</span>'}</td>
             ${isAdmin ? `<td class="row-actions">
               <button class="btn btn-outline btn-sm" onclick="openVagaForm('${v.id}')">Editar</button>
               <button class="btn btn-danger btn-sm" onclick="deleteVaga('${v.id}')">Excluir</button>
             </td>` : ''}
-          </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:24px;">Nenhuma vaga cadastrada ainda.</td></tr>`}
+          </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:24px;">Nenhuma vaga cadastrada ainda.</td></tr>`}
       </tbody>
     </table>
   `;
 }
 
-function openVagaForm(vagaId){
+async function openVagaForm(vagaId){
   const editing = !!vagaId;
   const v = editing ? db.vagas.find(x=>x.id===vagaId) : null;
   state.editingVagaId = vagaId || null;
+  await loadContatos();
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
     <h2>${editing ? 'Editar vaga' : 'Nova vaga'}</h2>
@@ -813,9 +711,33 @@ function openVagaForm(vagaId){
     <div class="field"><label>Resumo da vaga</label><textarea id="vResumo" rows="3">${v?escapeHtml(v.resumo):''}</textarea></div>
     <div class="field"><label>Responsabilidades <span class="hint">uma por linha</span></label><textarea id="vResp" rows="4">${v?v.responsabilidades.map(escapeHtml).join(String.fromCharCode(10)):''}</textarea></div>
     <div class="field"><label>Requisitos <span class="hint">uma por linha</span></label><textarea id="vReq" rows="4">${v?v.requisitos.map(escapeHtml).join(String.fromCharCode(10)):''}</textarea></div>
+    <div class="field">
+      <label>Contato responsável pela vaga <span class="hint">quem interessados devem procurar</span></label>
+      <select id="vContato" onchange="handleContatoSelectChange()">
+        <option value="">— Sem contato definido —</option>
+        ${db.contatos.map(c=>{
+          const selectedId = v ? v.contato_id : state.lastContatoId;
+          return `<option value="${c.id}" ${selectedId===c.id?'selected':''}>${escapeHtml(c.nome)}${c.email?' — '+escapeHtml(c.email):''}</option>`;
+        }).join('')}
+        <option value="__novo__">+ Criar novo contato...</option>
+      </select>
+      <div id="vNovoContatoWrap" style="display:none;margin-top:10px;">
+        <div class="field-row">
+          <div class="field"><input type="text" id="vNovoContatoNome" placeholder="Nome do contato"></div>
+          <div class="field"><input type="email" id="vNovoContatoEmail" placeholder="E-mail"></div>
+          <div class="field"><input type="text" id="vNovoContatoTelefone" placeholder="Telefone (opcional)"></div>
+        </div>
+      </div>
+    </div>
     <div class="form-error" id="vagaError"></div>
     <button class="apply-btn" id="saveVagaBtn" onclick="saveVaga()">${editing ? 'Salvar alterações' : 'Publicar vaga'}</button>
   `, true);
+}
+
+function handleContatoSelectChange(){
+  const sel = document.getElementById('vContato');
+  const wrap = document.getElementById('vNovoContatoWrap');
+  wrap.style.display = sel.value === '__novo__' ? 'block' : 'none';
 }
 
 function handleAreaSelectChange(){
@@ -846,6 +768,29 @@ async function saveVaga(){
 
   btn.disabled = true; btn.textContent = 'Salvando...';
 
+  let contatoId = document.getElementById('vContato').value;
+  if(contatoId === '__novo__'){
+    const cNome = document.getElementById('vNovoContatoNome').value.trim();
+    const cEmail = document.getElementById('vNovoContatoEmail').value.trim();
+    const cTel = document.getElementById('vNovoContatoTelefone').value.trim();
+    if(!cNome || (!cEmail && !cTel)){
+      btn.disabled = false; btn.textContent = state.editingVagaId ? 'Salvar alterações' : 'Publicar vaga';
+      err.textContent = 'Preencha nome e ao menos um contato (e-mail ou telefone) para o novo contato.';
+      return;
+    }
+    const { data: novoContato, error: contatoErr } = await sb.from('contatos_internas')
+      .insert({ nome: cNome, email: cEmail||null, telefone: cTel||null }).select().single();
+    if(contatoErr){
+      btn.disabled = false; btn.textContent = state.editingVagaId ? 'Salvar alterações' : 'Publicar vaga';
+      err.textContent = 'Não foi possível criar o novo contato.';
+      return;
+    }
+    contatoId = novoContato.id;
+    await loadContatos();
+  }
+  contatoId = contatoId || null;
+  state.lastContatoId = contatoId;
+
   if(!db.areas.some(a=>a.nome===area)){
     const { error: areaErr } = await sb.from('areas_internas').insert({ nome: area });
     if(!areaErr) await loadAreas();
@@ -860,12 +805,12 @@ async function saveVaga(){
   let opError;
   if(state.editingVagaId){
     const { error } = await sb.from('vagas_internas').update({
-      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo
+      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo, contato_id: contatoId
     }).eq('id', state.editingVagaId);
     opError = error;
   } else {
     const { error } = await sb.from('vagas_internas').insert({
-      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo, criado_por: state.currentUser.id
+      titulo, area, local, tipo, nivel, resumo, responsabilidades: resp, requisitos: req, codigo, contato_id: contatoId, criado_por: state.currentUser.id
     });
     opError = error;
   }
@@ -977,82 +922,65 @@ async function demoteToCandidato(userId){
   renderAdminTabBody();
 }
 
-async function renderAdminCandidaturas(body){
-  body.innerHTML = `<p style="color:var(--gray);font-size:13.5px;">Carregando candidaturas...</p>`;
-  await loadCandidaturas();
-  if(db.candidaturas.length === 0){
-    body.innerHTML = `<div class="empty-state"><h3>Nenhuma candidatura recebida ainda</h3><p>As inscrições enviadas pelos colaboradores aparecerão aqui.</p></div>`;
-    return;
-  }
-  body.innerHTML = db.candidaturas.map(c=>{
-    const data = new Date(c.enviado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    return `
-      <div class="card-app">
-        <div class="card-app-top">
-          <div>
-            <strong>${escapeHtml(c.candidato ? c.candidato.nome : 'Candidato removido')}</strong>
-            <div class="meta-line">${escapeHtml(c.candidato ? c.candidato.email : '')}</div>
-          </div>
-          <span class="job-code">${c.vaga ? escapeHtml(c.vaga.codigo) : 'Vaga removida'}</span>
-        </div>
-        <div class="meta-line" style="margin-top:8px;">Vaga: <strong>${c.vaga ? escapeHtml(c.vaga.titulo) : '(vaga removida)'}</strong> · Enviada em ${data}</div>
-        <div class="meta-line">Setor atual: ${escapeHtml(c.setor_atual)} · Gestor atual: ${escapeHtml(c.gestor_atual)}</div>
-        ${c.carta ? `<div class="letter">${escapeHtml(c.carta)}</div>` : ''}
-        <div style="margin-top:12px;">
-          <button class="btn btn-outline btn-sm" onclick="downloadCurriculo('${c.curriculo_path}', '${escapeHtml(c.curriculo_nome)}')">⬇ Baixar currículo (${escapeHtml(c.curriculo_nome)})</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function downloadCurriculo(path, nome){
-  const { data, error } = await sb.storage.from('curriculos').createSignedUrl(path, 60);
-  if(error || !data){ showToast('Não foi possível gerar o link do currículo.'); return; }
-  window.open(data.signedUrl, '_blank');
-}
-
-/* ============ CANDIDATE DASHBOARD ============ */
-function goToCandidateDashboard(){
-  if(!state.currentUser || state.currentUser.role !== 'candidato'){ openLoginModal('candidato'); return; }
-  document.getElementById('publicView').style.display = 'none';
-  document.getElementById('dashboardView').style.display = '';
-  renderCandidateDashboard();
-}
-
-async function renderCandidateDashboard(){
-  const el = document.getElementById('dashboardView');
-  el.innerHTML = `<main><p style="color:var(--gray);font-size:13.5px;">Carregando...</p></main>`;
-  const minhas = await loadMinhasCandidaturas();
-  el.innerHTML = `
-    <main>
-      <div class="dash-header">
-        <div>
-          <h1>Minhas candidaturas</h1>
-          <p>Acompanhe as vagas para as quais você já se candidatou.</p>
-        </div>
-        <button class="btn btn-outline" onclick="goHome()">← Voltar ao portal</button>
-      </div>
-      ${minhas.length === 0 ? `
-        <div class="empty-state"><h3>Você ainda não se candidatou a nenhuma vaga</h3><p>Explore as vagas abertas e candidate-se quando encontrar uma boa oportunidade.</p></div>
-      ` : minhas.map(c=>{
-        const data = new Date(c.enviado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
-        return `
-          <div class="card-app">
-            <div class="card-app-top">
-              <div>
-                <strong>${c.vaga ? escapeHtml(c.vaga.titulo) : 'Vaga removida'}</strong>
-                <div class="meta-line">${c.vaga ? escapeHtml(c.vaga.area)+' · '+escapeHtml(c.vaga.local) : ''}</div>
-              </div>
-              <span class="badge">Enviada</span>
-            </div>
-            <div class="meta-line" style="margin-top:8px;">Candidatura enviada em ${data}</div>
-          </div>
-        `;
-      }).join('')}
-    </main>
+/* ============ CONTATOS ============ */
+async function renderAdminContatos(body){
+  body.innerHTML = `<p style="color:var(--gray);font-size:13.5px;">Carregando contatos...</p>`;
+  await loadContatos();
+  body.innerHTML = `
+    <div class="admin-toolbar"><h3>${db.contatos.length} contato(s) cadastrado(s)</h3></div>
+    <table>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Em uso</th><th></th></tr></thead>
+      <tbody>
+        ${db.contatos.map(c=>{
+          const emUso = db.vagas.filter(v=>v.contato_id===c.id).length;
+          return `<tr>
+            <td>${escapeHtml(c.nome)}</td>
+            <td>${escapeHtml(c.email||'—')}</td>
+            <td>${escapeHtml(c.telefone||'—')}</td>
+            <td><span class="badge">${emUso} vaga(s)</span></td>
+            <td class="row-actions"><button class="btn btn-danger btn-sm" onclick="deleteContato('${c.id}')">Excluir</button></td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Nenhum contato cadastrado ainda.</td></tr>`}
+      </tbody>
+    </table>
+    <div class="admin-toolbar" style="margin-top:22px;"><h3>Novo contato</h3></div>
+    <div class="field-row">
+      <div class="field"><label>Nome</label><input type="text" id="novoContatoNome" placeholder="Nome do responsável"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="novoContatoEmail" placeholder="email@eratecnica.com.br"></div>
+      <div class="field"><label>Telefone <span class="hint">opcional</span></label><input type="text" id="novoContatoTelefone" placeholder="(11) 90000-0000"></div>
+    </div>
+    <div class="form-error" id="contatoError"></div>
+    <button class="btn btn-primary" onclick="addContato()">+ Adicionar contato</button>
   `;
 }
+
+async function addContato(){
+  const nome = document.getElementById('novoContatoNome').value.trim();
+  const email = document.getElementById('novoContatoEmail').value.trim();
+  const telefone = document.getElementById('novoContatoTelefone').value.trim();
+  const err = document.getElementById('contatoError');
+  if(!nome){ err.textContent = 'Informe pelo menos o nome do contato.'; return; }
+  if(!email && !telefone){ err.textContent = 'Informe pelo menos um e-mail ou telefone.'; return; }
+  const { error } = await sb.from('contatos_internas').insert({ nome, email: email||null, telefone: telefone||null });
+  if(error){ err.textContent = 'Não foi possível criar o contato.'; return; }
+  showToast('Contato criado.');
+  renderAdminTabBody();
+}
+
+async function deleteContato(id){
+  const emUso = db.vagas.filter(v=>v.contato_id===id).length;
+  if(emUso > 0){
+    if(!confirm(`Este contato está em uso em ${emUso} vaga(s). As vagas ficarão sem contato definido. Deseja continuar?`)) return;
+  } else if(!confirm('Excluir este contato?')){
+    return;
+  }
+  const { error } = await sb.from('contatos_internas').delete().eq('id', id);
+  if(error){ showToast('Não foi possível excluir o contato.'); return; }
+  await loadVagas();
+  showToast('Contato excluído.');
+  renderAdminTabBody();
+}
+
 
 /* ============ START ============ */
 init();
