@@ -33,6 +33,33 @@
   button{font-family:'Inter',sans-serif;cursor:pointer;}
   ::placeholder{color:#9AAAA1;}
 
+  .mission-banner{
+    background:var(--green-100);
+    border-bottom:1px solid var(--line);
+  }
+  .mission-banner-inner{
+    max-width:1180px;
+    margin:0 auto;
+    padding:16px 32px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .mission-banner-bar{
+    width:3px;
+    flex-shrink:0;
+    align-self:stretch;
+    background:var(--green-700);
+    border-radius:2px;
+  }
+  .mission-banner p{
+    font-size:13px;
+    line-height:1.6;
+    color:var(--green-900);
+    margin:0;
+  }
+  .mission-banner p + p{ margin-top:6px; }
+
   header{
     background:var(--white);
     border-bottom:1px solid var(--line);
@@ -234,6 +261,7 @@
 
   @media (max-width:640px){
     .header-inner{padding:14px 20px;}
+    .mission-banner-inner{padding:14px 20px;}
     .portal-label{display:none;}
     .filter-wrap, main{padding-left:20px;padding-right:20px;}
     .result-count{margin-left:0;width:100%;order:5;}
@@ -253,6 +281,16 @@
     <div class="auth-controls" id="authControls"></div>
   </div>
 </header>
+
+<div class="mission-banner">
+  <div class="mission-banner-inner">
+    <div class="mission-banner-bar"></div>
+    <div>
+      <p>Com o objetivo de fortalecer a valorização dos talentos internos e promover o desenvolvimento profissional de nossos colaboradores, a Era Técnica disponibiliza esta página exclusiva para a divulgação de oportunidades internas.</p>
+      <p>Esta iniciativa reforça o compromisso da Era Técnica em oferecer oportunidades de crescimento, priorizando os profissionais que já fazem parte do nosso quadro de colaboradores.</p>
+    </div>
+  </div>
+</div>
 
 <div id="publicView">
   <div class="filter-wrap">
@@ -371,7 +409,7 @@ async function loadProfiles(){
 function renderHeader(){
   const el = document.getElementById('authControls');
   if(!state.currentUser){
-    el.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="openLoginModal()">Área administrativa</button>`;
+    el.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="openLoginModal()">Login RH</button>`;
     return;
   }
   const u = state.currentUser;
@@ -510,7 +548,7 @@ function openJobModal(vagaId){
 function openLoginModal(){
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
-    <h2>Área administrativa</h2>
+    <h2>Login RH</h2>
     <p class="subtitle">Login restrito à equipe que gerencia as vagas.</p>
     <div class="field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seuemail@eratecnica.com.br"></div>
     <div class="field"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••"></div>
