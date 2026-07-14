@@ -38,17 +38,19 @@
     border-bottom:1px solid var(--line);
   }
   .mission-banner-inner{
-    max-width:1180px;
+    max-width:760px;
     margin:0 auto;
-    padding:16px 32px;
+    padding:20px 32px;
     display:flex;
-    gap:12px;
-    align-items:flex-start;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:10px;
   }
   .mission-banner-bar{
-    width:3px;
+    width:36px;
+    height:3px;
     flex-shrink:0;
-    align-self:stretch;
     background:var(--green-700);
     border-radius:2px;
   }
@@ -331,7 +333,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ============ APP STATE ============ */
-let db = { areas: [], vagas: [], contatos: [], profiles: [] };
+let db = { areas: [], niveis: [], vagas: [], contatos: [], profiles: [] };
 let state = {
   currentUser: null,        // {id, email, nome, role}
   adminTab: 'vagas',
@@ -380,6 +382,7 @@ async function init(){
   });
   await refreshSession();
   await loadAreas();
+  await loadNiveis();
   await loadVagas();
   renderHeader();
   populateFilters();
@@ -389,6 +392,10 @@ async function init(){
 async function loadAreas(){
   const { data, error } = await sb.from('areas_internas').select('*').order('nome');
   db.areas = error ? [] : data;
+}
+async function loadNiveis(){
+  const { data, error } = await sb.from('niveis_internos').select('*').order('nome');
+  db.niveis = error ? [] : data;
 }
 async function loadVagas(){
   const { data, error } = await sb.from('vagas_internas')
@@ -728,6 +735,7 @@ function renderAdminDashboard(){
       <div class="tabs">
         <button class="tab-btn ${state.adminTab==='vagas'?'active':''}" onclick="setAdminTab('vagas')">Vagas</button>
         ${isAdmin ? `<button class="tab-btn ${state.adminTab==='areas'?'active':''}" onclick="setAdminTab('areas')">Áreas</button>` : ''}
+        ${isAdmin ? `<button class="tab-btn ${state.adminTab==='niveis'?'active':''}" onclick="setAdminTab('niveis')">Níveis</button>` : ''}
         ${isAdmin ? `<button class="tab-btn ${state.adminTab==='contatos'?'active':''}" onclick="setAdminTab('contatos')">Contatos</button>` : ''}
         ${isAdmin ? `<button class="tab-btn ${state.adminTab==='admins'?'active':''}" onclick="setAdminTab('admins')">Administradores</button>` : ''}
       </div>
@@ -744,6 +752,7 @@ async function renderAdminTabBody(){
   const isAdmin = state.currentUser.role === 'admin';
   if(state.adminTab === 'vagas') return renderAdminVagas(body, isAdmin);
   if(state.adminTab === 'areas' && isAdmin) return renderAdminAreas(body);
+  if(state.adminTab === 'niveis' && isAdmin) return renderAdminNiveis(body);
   if(state.adminTab === 'contatos' && isAdmin) return renderAdminContatos(body);
   if(state.adminTab === 'admins' && isAdmin) return renderAdminAdmins(body);
 }
@@ -779,6 +788,7 @@ async function openVagaForm(vagaId){
   const v = editing ? db.vagas.find(x=>x.id===vagaId) : null;
   state.editingVagaId = vagaId || null;
   await loadContatos();
+  await loadNiveis();
   openModal(`
     <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
     <h2>${editing ? 'Editar vaga' : 'Nova vaga'}</h2>
@@ -810,9 +820,11 @@ async function openVagaForm(vagaId){
       </div>
       <div class="field">
         <label>Nível</label>
-        <select id="vNivel">
-          ${['Júnior','Pleno','Sênior'].map(n=>`<option ${v&&v.nivel===n?'selected':''}>${n}</option>`).join('')}
+        <select id="vNivel" onchange="handleNivelSelectChange()">
+          ${db.niveis.map(n=>`<option value="${escapeHtml(n.nome)}" ${v&&v.nivel===n.nome?'selected':''}>${escapeHtml(n.nome)}</option>`).join('')}
+          <option value="__novo__">+ Criar novo nível...</option>
         </select>
+        <input type="text" id="vNovoNivel" placeholder="Nome do novo nível (ex: Especialista)" style="margin-top:8px;display:none;">
       </div>
     </div>
     <div class="field"><label>Resumo da vaga</label><textarea id="vResumo" rows="3">${v?escapeHtml(v.resumo):''}</textarea></div>
@@ -853,13 +865,20 @@ function handleAreaSelectChange(){
   novaArea.style.display = sel.value === '__nova__' ? 'block' : 'none';
 }
 
+function handleNivelSelectChange(){
+  const sel = document.getElementById('vNivel');
+  const novoNivel = document.getElementById('vNovoNivel');
+  novoNivel.style.display = sel.value === '__novo__' ? 'block' : 'none';
+}
+
 async function saveVaga(){
   const titulo = document.getElementById('vTitulo').value.trim();
   let area = document.getElementById('vArea').value;
   const novaAreaVal = document.getElementById('vNovaArea').value.trim();
   const local = document.getElementById('vLocal').value.trim();
   const tipo = document.getElementById('vTipo').value;
-  const nivel = document.getElementById('vNivel').value;
+  let nivel = document.getElementById('vNivel').value;
+  const novoNivelVal = document.getElementById('vNovoNivel').value.trim();
   const resumo = document.getElementById('vResumo').value.trim();
   const resp = document.getElementById('vResp').value.split('\n').map(s=>s.trim()).filter(Boolean);
   const req = document.getElementById('vReq').value.split('\n').map(s=>s.trim()).filter(Boolean);
@@ -871,9 +890,18 @@ async function saveVaga(){
     if(!novaAreaVal){ err.textContent = 'Informe o nome da nova área.'; return; }
     area = novaAreaVal;
   }
-  if(!titulo || !area || !local || !resumo){ err.textContent = 'Preencha todos os campos obrigatórios.'; return; }
+  if(nivel === '__novo__'){
+    if(!novoNivelVal){ err.textContent = 'Informe o nome do novo nível.'; return; }
+    nivel = novoNivelVal;
+  }
+  if(!titulo || !area || !local || !nivel || !resumo){ err.textContent = 'Preencha todos os campos obrigatórios.'; return; }
 
   btn.disabled = true; btn.textContent = 'Salvando...';
+
+  if(!db.niveis.some(n=>n.nome===nivel)){
+    const { error: nivelErr } = await sb.from('niveis_internos').insert({ nome: nivel });
+    if(!nivelErr) await loadNiveis();
+  }
 
   let contatoId = document.getElementById('vContato').value;
   if(contatoId === '__novo__'){
@@ -970,6 +998,35 @@ async function addAreaStandalone(){
   await loadAreas();
   showToast('Área criada.');
   populateFilters();
+  renderAdminTabBody();
+}
+
+function renderAdminNiveis(body){
+  body.innerHTML = `
+    <div class="admin-toolbar"><h3>${db.niveis.length} nível(is) cadastrado(s)</h3></div>
+    <ul class="list-simple">
+      ${db.niveis.map(n=>{
+        const count = db.vagas.filter(v=>v.nivel===n.nome).length;
+        return `<li><span>${escapeHtml(n.nome)}</span><span class="badge">${count} vaga(s)</span></li>`;
+      }).join('') || '<li>Nenhum nível cadastrado.</li>'}
+    </ul>
+    <div class="admin-toolbar-inline">
+      <input type="text" id="novoNivelStandalone" placeholder="Nome do novo nível (ex: Especialista, Coordenador)">
+      <button class="btn btn-primary" onclick="addNivelStandalone()">+ Adicionar nível</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--gray);margin-top:8px;">Crie um nível com antecedência para já deixá-lo disponível ao publicar novas vagas.</p>
+  `;
+}
+
+async function addNivelStandalone(){
+  const input = document.getElementById('novoNivelStandalone');
+  const val = input.value.trim();
+  if(!val) return;
+  if(db.niveis.some(n=>n.nome===val)){ showToast('Esse nível já existe.'); return; }
+  const { error } = await sb.from('niveis_internos').insert({ nome: val });
+  if(error){ showToast('Não foi possível criar o nível.'); return; }
+  await loadNiveis();
+  showToast('Nível criado.');
   renderAdminTabBody();
 }
 
